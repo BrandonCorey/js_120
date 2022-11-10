@@ -6,14 +6,27 @@
 
 // Nouns: player, move, rule
 // Verbs: choose, compare
+const readline = require('readline-sync');
 
-function createPlayer() {
+function createPlayer(playerType) {
   return {
     // player name
     // player current move
-    choose() {
+    playerType,
+    move: null,
 
+    choose() {
+      if (this.isHuman()) {
+        
+      } else {
+        const choices = ['rock', 'paper', 'scissors'];
+        let randomIdx = Math.floor(Math.random() * choices.length);
+        this.move = choices[randomIdx];
+      }
     },
+    isHuman() {
+      return this.playerType === 'human';
+    }
   };
 }
 
@@ -26,17 +39,18 @@ function createMove() {
 function createRule() {
   return {
     // not clear whether rules need states
-  }
+  };
 }
 
-// since we don't know where to put compare yet, lets define it as an ordinary function
+// since we don't know where to put compare yet,
+// lets define it as an ordinary function
 let compare = function(move1, move2) {
 
-}
+};
 
 const RPSGame = {
-  human: createPlayer(),
-  computer: createPlayer(), // Doing this because both are players that need to make choices
+  human: createPlayer('human'),
+  computer: createPlayer('computer'), // Doing this because both are players that need to make choices
 
   displayWelcomeMessage() {
     console.log('Welcome to Rock, Paper, Scissors');
@@ -53,4 +67,4 @@ const RPSGame = {
     displayWinner();
     this.displayGoodbyeMessage();
   },
-}
+};
