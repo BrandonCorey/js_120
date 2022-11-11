@@ -6,12 +6,37 @@
 
 // Nouns: player, move, rule
 // Verbs: choose, compare
+
 const readline = require('readline-sync');
 
+function createWinCondition(choice) {
+  const conditions = {
+      rock: ['scissors'],
+      scissors: ['paper'],
+      paper: ['rock'], 
+  };
+
+  return conditions[choice];
+}
+
+function createChoices(name) {
+  let winCondition = createWinCondition(name)
+  return {
+    name,
+    winCondition,
+  };
+}
+
 function createPlayer() {
+  const choices = [
+    createChoices('rock'), 
+    createChoices('paper'), 
+    createChoices('scissors')
+  ];
+
   return {
     move: null,
-    choices: ['rock', 'paper', 'scissors'],
+    choices,
   };
 }
 
@@ -23,10 +48,6 @@ function createComputer() {
     choose() {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
       this.move = this.choices[randomIdx];
-      // These "this" uses work because the choose method isn't called here,
-      // it is called much later.
-      // At the point at which choose is called, the objects have been combined,
-      // and computerObject has all of playerObject's props
     }
   };
   return Object.assign(playerObject, computerObject);
@@ -37,38 +58,26 @@ function createHuman() {
   let humanObject = {
 
     choose() {
+      const isValid = (choices, choice) => choices.filter(option => option.name === choice);
       let choice;
       while (true) {
+
         console.log('Please choose rock, paper, or scissors:');
         choice = readline.question();
-        if (this.choices.includes(choice)) break;
+
+        if (isValid(this.choices, choice).length > 0) break;
+        
         console.log('Sorry, plese enter a valid choice!')
       }
-      this.move = choice;
+      this.move = isValid(this.choices, choice)[0]
     },
   };
 
   return Object.assign(playerObject, humanObject);
 }
 
-
-function createMove() {
-  return {
-    // type of move (paper, rock, scissors)
-  };
-}
-
-function createRule() {
-  return {
-    // not clear whether rules need states
-  };
-}
-
 // since we don't know where to put compare yet,
 // lets define it as an ordinary function
-let compare = function(move1, move2) {
-
-};
 
 const RPSGame = {
   human: createHuman(),
@@ -85,24 +94,26 @@ const RPSGame = {
     console.log('Thanks for playing Rock, Paper, Scissors, Goodbye!');
   },
 
-  displayWinner() {
+  calculateWinner() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
-    console.log(`You chose: ${this.human.move}`);
-    console.log(`The computer chose: ${this.computer.move}`);
+    if (humanMove.winCondition.includes(computerMove.name)) return 'human'
 
-    if ((humanMove === 'rock' && computerMove === 'scissors') ||
-        (humanMove === 'paper' && computerMove === 'rock') ||
-        (humanMove === 'scissors' && computerMove === 'paper')) {
-      console.log('You win!');
-    } else if ((humanMove === 'rock' && computerMove === 'paper') ||
-               (humanMove === 'paper' && computerMove === 'scissors') ||
-               (humanMove === 'scissors' && computerMove === 'rock')) {
-      console.log('Computer wins!');
-    } else {
-      console.log("It's a tie");
-    }
+    if (computerMove.winCondition.includes(humanMove.name)) return 'computer'
+    
+    return 'tie'
+  },
+
+  displayWinner() {
+   let winner = RPSGame.calculateWinner();
+
+    console.log(`You chose: ${this.human.move.name}`);
+    console.log(`The computer chose: ${this.computer.move.name}`);
+
+    if (winner === 'human') console.log('You won!');
+    else if (winner === 'computer') console.log('The computer Won!');
+    else console.log('It\'s a tie!');
   },
 
   playAgain() {
@@ -118,6 +129,7 @@ const RPSGame = {
       this.computer.choose();
       this.displayWinner();
       if (!this.playAgain()) break;
+      console.clear();
     }
     this.displayGoodbyeMessage();
   },
