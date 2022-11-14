@@ -11,9 +11,11 @@ const readline = require('readline-sync');
 
 function createWinCondition(choice) {
   const conditions = {
-      rock: ['scissors'],
-      scissors: ['paper'],
-      paper: ['rock'], 
+      rock: ['scissors', 'lizard'],
+      scissors: ['paper', 'lizard'],
+      paper: ['rock', 'spock'],
+      lizard: ['paper', 'spock'],
+      spock: ['rock', 'scissors'],
   };
 
   return conditions[choice];
@@ -31,12 +33,15 @@ function createPlayer() {
   const choices = [
     createChoices('rock'), 
     createChoices('paper'), 
-    createChoices('scissors')
+    createChoices('scissors'),
+    createChoices('lizard'),
+    createChoices('spock'),
   ];
 
   return {
     move: null,
     choices,
+    wins: 0,
   };
 }
 
@@ -62,11 +67,11 @@ function createHuman() {
       let choice;
       while (true) {
 
-        console.log('Please choose rock, paper, or scissors:');
+        console.log('Please choose rock, paper, scissors, lizard, or spock:');
         choice = readline.question();
 
         if (isValid(this.choices, choice).length > 0) break;
-        
+
         console.log('Sorry, plese enter a valid choice!')
       }
       this.move = isValid(this.choices, choice)[0]
@@ -82,37 +87,52 @@ function createHuman() {
 const RPSGame = {
   human: createHuman(),
   computer: createComputer(), // Doing this because both are players that need to make choices
+  roundWinner: null,
 
   displayWelcomeMessage() {
     console.clear();
     console.log(
-      `Welcome to Rocks, Paper, Scissors!`
+      `Welcome to Rocks, Paper, Scissors, Lizard, Spock!\n`
     );
   },
 
   displayGoodbyeMessage() {
-    console.log('Thanks for playing Rock, Paper, Scissors, Goodbye!');
+    console.log(
+      'Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Goodbye!'
+      );
   },
 
-  calculateWinner() {
+  updateRoundScore() {
+    if (this.roundWinner === 'human') this.human.wins += 1;
+    if (this.roundWinner === 'computer') this.computer.wins += 1;
+  },
+
+  displayRoundScore() {
+    console.log(
+      `Human Score: ${this.human.wins}\nComputer Score: ${this.computer.wins}\n`)
+  },
+
+  calculateRoundWinner() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
-    if (humanMove.winCondition.includes(computerMove.name)) return 'human'
+    if (humanMove.winCondition.includes(computerMove.name)) this.roundWinner = 'human'
 
-    if (computerMove.winCondition.includes(humanMove.name)) return 'computer'
-    
-    return 'tie'
+    else if (computerMove.winCondition.includes(humanMove.name)) {
+      this.roundWinner = 'computer'
+    }
+
+    else this.roundWinner = 'tie';
+
   },
 
   displayWinner() {
-   let winner = RPSGame.calculateWinner();
 
-    console.log(`You chose: ${this.human.move.name}`);
-    console.log(`The computer chose: ${this.computer.move.name}`);
+    console.log(`\nYou chose: ${this.human.move.name}`);
+    console.log(`The computer chose: ${this.computer.move.name}\n`);
 
-    if (winner === 'human') console.log('You won!');
-    else if (winner === 'computer') console.log('The computer Won!');
+    if (this.roundWinner === 'human') console.log('You won!');
+    else if (this.roundWinner === 'computer') console.log('The computer Won!');
     else console.log('It\'s a tie!');
   },
 
@@ -123,11 +143,15 @@ const RPSGame = {
   },
 
   play() {
-    this.displayWelcomeMessage(); // Everything that is an overall convern to the game, keep in the game engine (makes sense to)
+    this.displayWelcomeMessage(); 
     while (true) {
+      this.displayRoundScore();
       this.human.choose();
       this.computer.choose();
+      this.calculateRoundWinner();
+      this.updateRoundScore();
       this.displayWinner();
+
       if (!this.playAgain()) break;
       console.clear();
     }
