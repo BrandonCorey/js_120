@@ -8,6 +8,7 @@
 // Verbs: choose, compare
 
 const readline = require('readline-sync');
+const ROUNDS_TO_WIN = 5;
 
 function createWinCondition(choice) {
   const conditions = {
@@ -40,8 +41,10 @@ function createPlayer() {
 
   return {
     move: null,
+    moveHistory: [],
     choices,
-    wins: 0,
+    roundWins: 0,
+    matchWins: 0,
   };
 }
 
@@ -49,10 +52,11 @@ function createComputer() {
   let playerObject = createPlayer();
 
   let computerObject =  {
-
     choose() {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
-      this.move = this.choices[randomIdx];
+      let choice = this.choices[randomIdx];
+      this.move = choice;
+      this.moveHistory.push(choice.name);
     }
   };
   return Object.assign(playerObject, computerObject);
@@ -74,7 +78,10 @@ function createHuman() {
 
         console.log('Sorry, plese enter a valid choice!')
       }
-      this.move = isValid(this.choices, choice)[0]
+
+      choice = isValid(this.choices, choice)[0];
+      this.move = choice;
+      this.moveHistory.push(choice.name);
     },
   };
 
@@ -88,12 +95,23 @@ const RPSGame = {
   human: createHuman(),
   computer: createComputer(), // Doing this because both are players that need to make choices
   roundWinner: null,
+  matchWinner: null,
 
   displayWelcomeMessage() {
     console.clear();
     console.log(
-      `Welcome to Rocks, Paper, Scissors, Lizard, Spock!\n`
-    );
+      'Welcome to Rocks, Paper, Scissors, Lizard, Spock!\n'
+    )
+    console.log('First to 5 wins the match!\n');
+
+    let play;
+
+    while (true) {
+      console.log('Type "rps" to play!');
+      play = readline.question();
+      if (play === 'rps') break;
+    }
+    console.clear();
   },
 
   displayGoodbyeMessage() {
@@ -103,16 +121,26 @@ const RPSGame = {
   },
 
   updateRoundScore() {
-    if (this.roundWinner === 'human') this.human.wins += 1;
-    if (this.roundWinner === 'computer') this.computer.wins += 1;
+    if (this.roundWinner === 'human') this.human.roundWins += 1;
+    if (this.roundWinner === 'computer') this.computer.roundWins += 1;
   },
 
-  displayRoundScore() {
+  updateMatchScore() {
+    if (this.matchWinner === 'human') this.human.matchWins += 1;
+    if (this.matchWinner === 'computer') this.computer.matchWins += 1;
+  },
+
+  displayScore() {
+    console.clear();
     console.log(
-      `Human Score: ${this.human.wins}\nComputer Score: ${this.computer.wins}\n`)
+      `You:       Round Wins: ${this.human.roundWins} || Match Wins: ${this.human.matchWins}`)
+    console.log(
+      `Computer:  Round Wins: ${this.computer.roundWins} || Match Wins: ${this.computer.matchWins}`
+    )
+    console.log('--------------------------------------------')
   },
 
-  calculateRoundWinner() {
+  getRoundWinner() {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
@@ -126,14 +154,29 @@ const RPSGame = {
 
   },
 
-  displayWinner() {
+  getMatchWinner() {
+    if (this.human.roundWins === ROUNDS_TO_WIN) this.matchWinner = 'human';
+    if (this.computer.roundWins === ROUNDS_TO_WIN) this.matchWinner = 'computer';
+  },
 
+  displayChoices() {
     console.log(`\nYou chose: ${this.human.move.name}`);
     console.log(`The computer chose: ${this.computer.move.name}\n`);
 
-    if (this.roundWinner === 'human') console.log('You won!');
-    else if (this.roundWinner === 'computer') console.log('The computer Won!');
+    console.log(`Your move history: ${this.human.moveHistory.join(', ')}`);
+    console.log(`Commputer move history: ${this.computer.moveHistory.join(', ')}\n`);
+
+  },
+
+  displayRoundWinner() {
+    if (this.roundWinner === 'human') console.log('You won the round.');
+    else if (this.roundWinner === 'computer') console.log('The computer won the round.');
     else console.log('It\'s a tie!');
+  },
+
+  displayMatchWinner() {
+    if (this.matchWinner === 'human') console.log('You also won the match!\n');
+    if (this.matchWinner === 'computer') console.log('The computer also won the match!\n')
   },
 
   playAgain() {
@@ -142,18 +185,40 @@ const RPSGame = {
     return answer.toLowerCase()[0] === 'y';
   },
 
+  resetRoundScore() {
+    [this.human.roundWins, this.computer.roundWins] = [0, 0];
+  },
+
+  playRound() {
+    this.displayScore();
+    this.human.choose();
+    this.computer.choose();
+    this.getRoundWinner();
+    this.updateRoundScore();
+    this.displayScore();
+    this.displayChoices();
+    this.displayRoundWinner();
+  },
+
   play() {
     this.displayWelcomeMessage(); 
     while (true) {
-      this.displayRoundScore();
-      this.human.choose();
-      this.computer.choose();
-      this.calculateRoundWinner();
-      this.updateRoundScore();
-      this.displayWinner();
+      this.playRound();
+
+      this.getMatchWinner();
+      this.updateMatchScore();
+      
+      if (this.matchWinner) this.displayMatchWinner();
 
       if (!this.playAgain()) break;
+
+      if (this.matchWinner) {
+        this.resetRoundScore();
+        this.matchWinner = null;
+      }
+
       console.clear();
+
     }
     this.displayGoodbyeMessage();
   },
