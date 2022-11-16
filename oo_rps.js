@@ -48,13 +48,52 @@ function createPlayer() {
   };
 }
 
+// Take an array and return the most frequently occuring elmement
+function getMode(array) {
+  let hash = {};
+
+  array.forEach(element => {
+    hash[element] = (hash[element] || 0) + 1;
+  });
+ 
+  return Object.entries(hash).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function getStrongestMove(computerChoices, humanHistory) {
+  let modeOfHuman = getMode(humanHistory);
+
+  let response = computerChoices.filter(obj => obj.winCondition.includes(modeOfHuman));
+  return response[0];
+}
+
 function createComputer() {
   let playerObject = createPlayer();
 
   let computerObject =  {
-    choose() {
+    winnerHistory: [],
+    losingMoveHistory: [],
+
+    calculateStrength() {
+      this.winnerHistory.forEach((winner, idx) => {
+        if (winner === 'human') {
+          let losingMove = this.moveHistory[idx];
+          this.losingMoveHistory.push(losingMove);
+        }
+      });
+    },
+
+    // winner history length is the same as number of rounds
+    // losing move history length is the same as number of rounds lost
+    // Get the freqeuncy of all losing moves by move (object)
+    // Divide each loss frequnecy by the length of losing move history to get percent of losses for each losing choice
+    // Ran
+
+    choose(humanMoveHistory) {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
-      let choice = this.choices[randomIdx];
+      let choice;
+      if (humanMoveHistory.length < 2) choice = this.choices[randomIdx];
+      choice = getStrongestMove(this.choices, humanMoveHistory);
+
       this.move = choice;
       this.moveHistory.push(choice.name);
     }
@@ -130,6 +169,10 @@ const RPSGame = {
     if (this.matchWinner === 'computer') this.computer.matchWins += 1;
   },
 
+  updateWinnerHistory() {
+    this.computer.winnerHistory.push(this.roundWinner);
+  },
+
   displayScore() {
     console.clear();
     console.log(
@@ -192,7 +235,7 @@ const RPSGame = {
   playRound() {
     this.displayScore();
     this.human.choose();
-    this.computer.choose();
+    this.computer.choose(this.human.moveHistory);
     this.getRoundWinner();
     this.updateRoundScore();
     this.displayScore();
