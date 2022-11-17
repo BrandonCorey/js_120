@@ -48,51 +48,61 @@ function createPlayer() {
   };
 }
 
-// Take an array and return the most frequently occuring elmement
-function getMode(array) {
-  let hash = {};
-
-  array.forEach(element => {
-    hash[element] = (hash[element] || 0) + 1;
-  });
- 
-  return Object.entries(hash).sort((a, b) => b[1] - a[1])[0][0];
-}
-
-function getStrongestMove(computerChoices, humanHistory) {
-  let modeOfHuman = getMode(humanHistory);
-
-  let response = computerChoices.filter(obj => obj.winCondition.includes(modeOfHuman));
-  return response[0];
-}
-
 function createComputer() {
   let playerObject = createPlayer();
 
   let computerObject =  {
     winnerHistory: [],
-    losingMoveHistory: [],
+    winningMoveHistory: [],
+    weights: {'rock': 0.2, 'paper': 0.2, 'scissors': 0.2, 'lizard': 0.2, 'spock': 0.2}, // Default weights
+    weightedMove: null,
 
-    calculateStrength() {
+
+    populateWinningMoves() {
       this.winnerHistory.forEach((winner, idx) => {
-        if (winner === 'human') {
-          let losingMove = this.moveHistory[idx];
-          this.losingMoveHistory.push(losingMove);
+        if (idx === this.winnerHistory.length - 1 && (winner === 'computer')) {
+          let winningMove = this.moveHistory[idx];
+          this.winningMoveHistory.push(winningMove);
         }
       });
     },
 
-    // winner history length is the same as number of rounds
-    // losing move history length is the same as number of rounds lost
-    // Get the freqeuncy of all losing moves by move (object)
-    // Divide each loss frequnecy by the length of losing move history to get percent of losses for each losing choice
-    // Ran
+    getWeightedMove() {
+      let sum = 0;
+      let random = Math.random();
 
-    choose(humanMoveHistory) {
+      for (let move in this.weights) {
+        const getWeights = () => {
+          let cnt = 0;
+          for (let moveName of this.winningMoveHistory) {
+            if (moveName === move) cnt += 1;
+          }
+          let newWeight = cnt / this.winningMoveHistory.length;
+          return newWeight > 0.2 ? newWeight: 0.2;
+        }
+        this.weights[move] = getWeights();
+      }
+      console.log(this.weights);
+      for (let move in this.weights) {
+        let percentOfWins = this.weights[move]
+        sum += percentOfWins
+        if (random <= sum) {
+          this.weightedMove = move;
+          break;
+        };
+      }
+    },
+
+    choose() {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
       let choice;
-      if (humanMoveHistory.length < 2) choice = this.choices[randomIdx];
-      choice = getStrongestMove(this.choices, humanMoveHistory);
+      
+      if (this.winningMoveHistory.length < 3) choice = this.choices[randomIdx];
+      else {
+        let choiceName = this.weightedMove;
+        choice = this.choices.find(choiceObj => choiceObj.name === choiceName);
+
+      }
 
       this.move = choice;
       this.moveHistory.push(choice.name);
@@ -127,12 +137,9 @@ function createHuman() {
   return Object.assign(playerObject, humanObject);
 }
 
-// since we don't know where to put compare yet,
-// lets define it as an ordinary function
-
 const RPSGame = {
   human: createHuman(),
-  computer: createComputer(), // Doing this because both are players that need to make choices
+  computer: createComputer(), 
   roundWinner: null,
   matchWinner: null,
 
@@ -232,11 +239,18 @@ const RPSGame = {
     [this.human.roundWins, this.computer.roundWins] = [0, 0];
   },
 
+  resetMoveHistory() {
+    [this.human.moveHistory, this.computerMoveHistory] = [[], []];
+  },
+
   playRound() {
     this.displayScore();
     this.human.choose();
-    this.computer.choose(this.human.moveHistory);
+    this.computer.populateWinningMoves()
+    this.computer.getWeightedMove();
+    this.computer.choose();
     this.getRoundWinner();
+    this.updateWinnerHistory();
     this.updateRoundScore();
     this.displayScore();
     this.displayChoices();
@@ -257,6 +271,7 @@ const RPSGame = {
 
       if (this.matchWinner) {
         this.resetRoundScore();
+        this.resetMoveHistory();
         this.matchWinner = null;
       }
 
