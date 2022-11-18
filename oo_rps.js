@@ -15,11 +15,11 @@ const PLAYER_NAME = 'human';
 // Creates win conditions for each choice
 function createWinCondition(choice) {
   const conditions = {
-      rock: ['scissors', 'lizard'],
-      scissors: ['paper', 'lizard'],
-      paper: ['rock', 'spock'],
-      lizard: ['paper', 'spock'],
-      spock: ['rock', 'scissors'],
+    rock: ['scissors', 'lizard'],
+    scissors: ['paper', 'lizard'],
+    paper: ['rock', 'spock'],
+    lizard: ['paper', 'spock'],
+    spock: ['rock', 'scissors'],
   };
 
   return conditions[choice];
@@ -27,7 +27,7 @@ function createWinCondition(choice) {
 
 // Creates object for each choice with name and win conditions
 function createChoices(name) {
-  let winCondition = createWinCondition(name)
+  let winCondition = createWinCondition(name);
   return {
     name,
     winCondition,
@@ -37,8 +37,8 @@ function createChoices(name) {
 // Creates player template for human and computer
 function createPlayer() {
   const choices = [
-    createChoices('rock'), 
-    createChoices('paper'), 
+    createChoices('rock'),
+    createChoices('paper'),
     createChoices('scissors'),
     createChoices('lizard'),
     createChoices('spock'),
@@ -60,51 +60,53 @@ function createComputer() {
   let computerObject =  {
     winnerHistory: [],
     winningMoveHistory: [],
-    weights: { 'rock': 0.2, 'paper': 0.2, 'scissors': 0.2, 'lizard': 0.2, 'spock': 0.2 }, // Default / minimum weights
+    weights: { rock: 0.2, paper: 0.2, scissors: 0.2, lizard: 0.2, spock: 0.2 }, // Default / minimum weights
     weightedMove: null,
 
     // Creates array of winning moves each round
     populateWinningMoves() {
-      this.winnerHistory.forEach((winner, idx) => {
-        if (idx === this.winnerHistory.length - 1 && (winner === CPU_NAME)) {
-          let winningMove = this.moveHistory[idx];
-          this.winningMoveHistory.push(winningMove);
+      let objThis = this; // This is making it so 'this' is not shadowed in the inner function
+      this.winnerHistory.forEach(function (winner, idx) { // Can also use arrow func here to adopt context of parent
+        if (idx === objThis.winnerHistory.length - 1 && (winner === CPU_NAME)) {
+          let winningMove = objThis.moveHistory[idx];
+          objThis.winningMoveHistory.push(winningMove);
         }
       });
     },
-    
-    // Keeps track of computers most successful choices, and weights those more heavily in future
+
+    // Keeps track of computers most successful choices,
+    // and weights those more heavily in future
     getWeightedMove() {
       let sum = 0;
       let random = Math.random();
 
       for (let move in this.weights) {
-        const getWeights = () => {
+        this.weights[move] = function () {
           let cnt = 0;
           for (let moveName of this.winningMoveHistory) {
             if (moveName === move) cnt += 1;
           }
           let newWeight = cnt / this.winningMoveHistory.length;
-          return newWeight > 0.2 ? newWeight: 0.2;
+          return newWeight > 0.2 ? newWeight : 0.2;
         }
-        this.weights[move] = getWeights();
       }
       console.log(this.weights);
       for (let move in this.weights) {
-        let percentOfWins = this.weights[move]
-        sum += percentOfWins
+        let percentOfWins = this.weights[move];
+        sum += percentOfWins;
         if (random <= sum) {
           this.weightedMove = move;
           break;
-        };
+        }
       }
     },
-    
-    // Gets choice for computer. Doesn't implement weighted choices until after 3 winning rouinds
+
+    // Gets choice for computer.
+    // Doesn't implement weighted choices until after 3 winning rouinds
     choose() {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
       let choice;
-      
+
       if (this.winningMoveHistory.length < 3) choice = this.choices[randomIdx];
       else {
         let choiceName = this.weightedMove;
@@ -123,10 +125,11 @@ function createComputer() {
 function createHuman() {
   let playerObject = createPlayer();
   let humanObject = {
-    
+
     // Gets choice for human. Uses isValid to check for valid input
-    choose() {
-      const isValid = (choices, choice) => choices.find(option => {
+
+    isValid(choices, choice) {
+      return choices.find(option => {
         switch (choice) {
           case 'r':
             return option.name === 'rock';
@@ -142,6 +145,9 @@ function createHuman() {
           default: return option.name === choice;
         }
       });
+    },
+
+    choose() {
 
       let choice;
 
@@ -150,12 +156,12 @@ function createHuman() {
         console.log('Please choose rock (r), paper (p), scissors (s), lizard (l), or spock (sp): ');
         choice = readline.question();
 
-        if (isValid(this.choices, choice)) break;
+        if (this.isValid(this.choices, choice)) break;
 
-        console.log('Sorry, plese enter a valid choice!')
+        console.log('Sorry, plese enter a valid choice!');
       }
 
-      choice = isValid(this.choices, choice);
+      choice = this.isValid(this.choices, choice);
       this.move = choice;
       this.moveHistory.push(choice.name);
     },
@@ -167,7 +173,7 @@ function createHuman() {
 // Main game object. Has methods and properties relevant to the meta-game
 const RPSGame = {
   human: createHuman(),
-  computer: createComputer(), 
+  computer: createComputer(),
   roundWinner: null,
   matchWinner: null,
 
@@ -176,10 +182,10 @@ const RPSGame = {
     console.clear();
     console.log(
       '-- Welcome to Rocks, Paper, Scissors, Lizard, Spock! --\n'
-    )
+    );
     console.log('Rules: \n\n1. You must choose either rock, paper, scissors, lizard or spock');
     console.log('2. The computer will also make a choice each turn');
-    console.log('3. This is a game of matchups...the winner is determined by the following rules:')
+    console.log('3. This is a game of matchups...the winner is determined by the following rules:');
     console.log('  - Rock beats scissors and lizard');
     console.log('  - Paper beats rock and spock');
     console.log('  - Scissors beats paper and lizard');
@@ -204,9 +210,9 @@ const RPSGame = {
   displayGoodbyeMessage() {
     console.log(
       'Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Goodbye!'
-      );
+    );
   },
-  
+
   // Updates the round score based on the winner of the round
   updateRoundScore() {
     if (this.roundWinner === PLAYER_NAME) this.human.roundWins += 1;
@@ -228,11 +234,11 @@ const RPSGame = {
   displayScore() {
     console.clear();
     console.log(
-      `You:       Round Wins: ${this.human.roundWins} || Match Wins: ${this.human.matchWins}`)
+      `You:       Round Wins: ${this.human.roundWins} || Match Wins: ${this.human.matchWins}`);
     console.log(
       `Computer:  Round Wins: ${this.computer.roundWins} || Match Wins: ${this.computer.matchWins}`
-    )
-    console.log('--------------------------------------------')
+    );
+    console.log('--------------------------------------------');
   },
 
   // Calculates the round winner of the game based on win conditions
@@ -240,28 +246,27 @@ const RPSGame = {
     let humanMove = this.human.move;
     let computerMove = this.computer.move;
 
-    if (humanMove.winCondition.includes(computerMove.name)) this.roundWinner = PLAYER_NAME
+    if (humanMove.winCondition.includes(computerMove.name)) this.roundWinner = PLAYER_NAME;
 
     else if (computerMove.winCondition.includes(humanMove.name)) {
-      this.roundWinner = CPU_NAME
-    }
-
-    else this.roundWinner = 'tie';
+      this.roundWinner = CPU_NAME;
+    } else this.roundWinner = 'tie';
 
   },
 
-  // Calculates match winner based on number of rounds won compared to a specified amount for a match win
+  // Calculates match winner based on number of rounds won
+  // compared to a specified amount for a match win
   getMatchWinner() {
     if (this.human.roundWins === ROUNDS_TO_WIN) this.matchWinner = PLAYER_NAME;
     if (this.computer.roundWins === ROUNDS_TO_WIN) this.matchWinner = CPU_NAME;
   },
 
-  // Displays the current choices and choice history of each player/ 
+  // Displays the current choices and choice history of each player/
   // Will abreviate if history gets too long
   displayChoices() {
     const elipses = moveHistory => {
       return moveHistory.length > 5 ? '... ' + moveHistory.slice(-5).join(', ') : moveHistory.join(', ');
-  }
+    };
     let humanMove = this.human.move.name;
     let computerMove = this.computer.move.name;
 
@@ -272,7 +277,7 @@ const RPSGame = {
     console.log(`Commputer move history: ${elipses(this.computer.moveHistory)}\n`);
 
   },
-  
+
   // Displays the winner of the round
   displayRoundWinner() {
     if (this.roundWinner === PLAYER_NAME) console.log('You won the round.');
@@ -283,7 +288,7 @@ const RPSGame = {
   // Displays the winner of the match
   displayMatchWinner() {
     if (this.matchWinner === PLAYER_NAME) console.log('You also won the match!\n');
-    if (this.matchWinner === CPU_NAME) console.log('The computer also won the match!\n')
+    if (this.matchWinner === CPU_NAME) console.log('The computer also won the match!\n');
   },
 
   // Asks if human would like to play again and validates answer
@@ -307,7 +312,7 @@ const RPSGame = {
   playRound() {
     this.displayScore();
     this.human.choose();
-    this.computer.populateWinningMoves()
+    this.computer.populateWinningMoves();
     this.computer.getWeightedMove();
     this.computer.choose();
     this.getRoundWinner();
@@ -320,14 +325,14 @@ const RPSGame = {
 
   // Main game engine for rpslsp
   play() {
-    this.displayWelcomeMessage(); 
+    this.displayWelcomeMessage();
     this.playGameValidation();
     while (true) {
       this.playRound();
 
       this.getMatchWinner();
       this.updateMatchScore();
-      
+
       if (this.matchWinner) this.displayMatchWinner();
 
       if (!this.playAgain()) break;
