@@ -116,19 +116,35 @@ function createHuman() {
   let humanObject = {
 
     choose() {
-      const isValid = (choices, choice) => choices.filter(option => option.name === choice);
+      const isValid = (choices, choice) => choices.find(option => {
+        switch (choice) {
+          case 'r':
+            return option.name === 'rock';
+          case 'p':
+            return option.name === 'paper';
+          case 's':
+            return option.name === 'scissors';
+          case 'l':
+            return opntion.name === 'lizard';
+          case 'sp':
+            return option.name === 'spock';
+
+          default: return option.name === choice;
+        }
+
+      });
       let choice;
       while (true) {
 
-        console.log('Please choose rock, paper, scissors, lizard, or spock:');
+        console.log('Please choose rock (r), paper (p), scissors (s), lizard (l), or spock (sp): ');
         choice = readline.question();
 
-        if (isValid(this.choices, choice).length > 0) break;
+        if (isValid(this.choices, choice)) break;
 
         console.log('Sorry, plese enter a valid choice!')
       }
 
-      choice = isValid(this.choices, choice)[0];
+      choice = isValid(this.choices, choice);
       this.move = choice;
       this.moveHistory.push(choice.name);
     },
@@ -146,14 +162,22 @@ const RPSGame = {
   displayWelcomeMessage() {
     console.clear();
     console.log(
-      'Welcome to Rocks, Paper, Scissors, Lizard, Spock!\n'
+      '-- Welcome to Rocks, Paper, Scissors, Lizard, Spock! --\n'
     )
-    console.log('First to 5 wins the match!\n');
+    console.log('Rules: \n\n1. You must choose either rock, paper, scissors, lizard or spock');
+    console.log('2. The computer will also make a choice each turn');
+    console.log('3. This is a game of matchups...the winner is determined by the following rules:')
+    console.log('  - Rock beats scissors and lizard');
+    console.log('  - Paper beats rock and spock');
+    console.log('  - Scissors beats paper and lizard');
+    console.log('  - lizard beats paper and spock');
+    console.log('  - spock beats rock and scissors');
+    console.log('\n-- First to 5 wins the match! --\n');
 
     let play;
 
     while (true) {
-      console.log('Type "rps" to play!');
+      console.log('--> Type "rps" to play!');
       play = readline.question();
       if (play === 'rps') break;
     }
@@ -230,9 +254,14 @@ const RPSGame = {
   },
 
   playAgain() {
-    console.log('Would you like to play again? (y/n)');
-    let answer = readline.question();
-    return answer.toLowerCase()[0] === 'y';
+    let answer;
+    while (true) {
+      console.log('Would you like to play again? (y/n)');
+      answer = readline.question();
+
+      if (answer === 'n' || answer === 'no') return false;
+      if (answer === 'y' || answer === 'yes') return true;
+    }
   },
 
   resetRoundScore() {
