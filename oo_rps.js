@@ -65,7 +65,7 @@ function createComputer() {
 
     // Creates array of winning moves each round
     populateWinningMoves() {
-      let objThis = this; // This is making it so 'this' is not shadowed in the inner function
+      let objThis = this; 
       this.winnerHistory.forEach(function (winner, idx) { // Can also use arrow func here to adopt context of parent
         if (idx === objThis.winnerHistory.length - 1 && (winner === CPU_NAME)) {
           let winningMove = objThis.moveHistory[idx];
