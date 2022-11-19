@@ -91,15 +91,6 @@ function createComputer() {
       let sum = 0;
       let random = Math.random();
 
-      const getWeight = (move) => {
-        let cnt = 0;
-        for (let moveName of this.winningMoveHistory) {
-          if (moveName === move) cnt += 1;
-        }
-        let newWeight = cnt / this.winningMoveHistory.length;
-        return newWeight > WEIGHT ? newWeight : WEIGHT;
-      }
-
       for (let move in this.weights) {
         this.weights[move] = (() => {
           let cnt = 0;
