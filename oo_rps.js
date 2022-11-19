@@ -11,6 +11,7 @@ const readline = require('readline-sync');
 const ROUNDS_TO_WIN = 5;
 const CPU_NAME = 'computer';
 const PLAYER_NAME = 'human';
+const WEIGHT = 0.2;
 
 // Creates win conditions for each choice
 function createWinCondition(choice) {
@@ -60,7 +61,13 @@ function createComputer() {
   let computerObject =  {
     winnerHistory: [],
     winningMoveHistory: [],
-    weights: { rock: 0.2, paper: 0.2, scissors: 0.2, lizard: 0.2, spock: 0.2 }, // Default / minimum weights
+    weights: { 
+      rock: WEIGHT, 
+      paper: WEIGHT, 
+      scissors: WEIGHT, 
+      lizard: WEIGHT, 
+      spock: WEIGHT 
+    }, // Default / minimum weights
     weightedMove: null,
 
     // Creates array of winning moves each round
@@ -87,7 +94,7 @@ function createComputer() {
             if (moveName === move) cnt += 1;
           }
           let newWeight = cnt / this.winningMoveHistory.length;
-          return newWeight > 0.2 ? newWeight : 0.2;
+          return newWeight > WEIGHT ? newWeight : WEIGHT;
         }
       }
       console.log(this.weights);
