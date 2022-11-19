@@ -164,7 +164,7 @@ function createHuman() {
       while (true) {
 
         console.log('Please choose rock (r), paper (p), scissors (s), lizard (l), or spock (sp): ');
-        choice = readline.question();
+        choice = readline.question().toLowerCase();
 
         if (this.isValid(this.choices, choice)) break;
 
@@ -210,7 +210,7 @@ const RPSGame = {
 
     while (true) {
       console.log('--> Type "rps" to play!');
-      play = readline.question();
+      play = readline.question().toLowerCase();
       if (play === 'rps') break;
     }
     console.clear();
@@ -219,7 +219,7 @@ const RPSGame = {
   // Displays goodbye message
   displayGoodbyeMessage() {
     console.log(
-      'Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Goodbye!'
+      '\nThanks for playing Rock, Paper, Scissors, Lizard, Spock. Goodbye!'
     );
   },
 
@@ -306,7 +306,7 @@ const RPSGame = {
     let answer;
     while (true) {
       console.log('Would you like to play again? (y/n)');
-      answer = readline.question();
+      answer = readline.question().toLowerCase();
 
       if (answer === 'n' || answer === 'no') return false;
       if (answer === 'y' || answer === 'yes') return true;
