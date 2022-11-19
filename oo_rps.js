@@ -61,6 +61,7 @@ function createComputer() {
   let computerObject =  {
     winnerHistory: [],
     winningMoveHistory: [],
+    weightedMove: null,
     weights: { 
       rock: WEIGHT, 
       paper: WEIGHT, 
@@ -68,36 +69,48 @@ function createComputer() {
       lizard: WEIGHT, 
       spock: WEIGHT 
     }, // Default / minimum weights
-    weightedMove: null,
+
 
     // Creates array of winning moves each round
     populateWinningMoves() {
-      let objThis = this; 
-      this.winnerHistory.forEach(function (winner, idx) { // Can also use arrow func here to adopt context of parent
-        if (idx === objThis.winnerHistory.length - 1 && (winner === CPU_NAME)) {
-          let winningMove = objThis.moveHistory[idx];
-          objThis.winningMoveHistory.push(winningMove);
-        }
-      });
+      let lastIdx = this.winnerHistory.length -1;
+      if (this.winnerHistory[lastIdx] === CPU_NAME) {
+        let winningMove = this.moveHistory[lastIdx];
+        this.winningMoveHistory.push(winningMove);
+      }
+
     },
 
     // Keeps track of computers most successful choices,
     // and weights those more heavily in future
     getWeightedMove() {
+      console.log(this.weights);
+      console.log(this.winnerHistory);
+      console.log(this.winningMoveHistory);
+
       let sum = 0;
       let random = Math.random();
 
+      const getWeight = (move) => {
+        let cnt = 0;
+        for (let moveName of this.winningMoveHistory) {
+          if (moveName === move) cnt += 1;
+        }
+        let newWeight = cnt / this.winningMoveHistory.length;
+        return newWeight > WEIGHT ? newWeight : WEIGHT;
+      }
+
       for (let move in this.weights) {
-        this.weights[move] = function () {
+        this.weights[move] = (() => {
           let cnt = 0;
           for (let moveName of this.winningMoveHistory) {
             if (moveName === move) cnt += 1;
           }
           let newWeight = cnt / this.winningMoveHistory.length;
           return newWeight > WEIGHT ? newWeight : WEIGHT;
-        }
+        })();
       }
-      console.log(this.weights);
+
       for (let move in this.weights) {
         let percentOfWins = this.weights[move];
         sum += percentOfWins;
@@ -114,9 +127,10 @@ function createComputer() {
       let randomIdx = Math.floor(Math.random() * this.choices.length);
       let choice;
 
-      if (this.winningMoveHistory.length < 3) choice = this.choices[randomIdx];
+      if (this.winningMoveHistory.length < 1) choice = this.choices[randomIdx];
       else {
         let choiceName = this.weightedMove;
+        console.log(choiceName)
         choice = this.choices.find(choiceObj => choiceObj.name === choiceName);
 
       }
@@ -186,7 +200,7 @@ const RPSGame = {
 
   // Displays welcome
   displayWelcomeMessage() {
-    console.clear();
+    // console.clear();
     console.log(
       '-- Welcome to Rocks, Paper, Scissors, Lizard, Spock! --\n'
     );
@@ -210,7 +224,7 @@ const RPSGame = {
       play = readline.question();
       if (play === 'rps') break;
     }
-    console.clear();
+    // console.clear();
   },
 
   // Displays goodbye message
@@ -239,7 +253,7 @@ const RPSGame = {
 
   // Displays the score of the game
   displayScore() {
-    console.clear();
+    // console.clear();
     console.log(
       `You:       Round Wins: ${this.human.roundWins} || Match Wins: ${this.human.matchWins}`);
     console.log(
@@ -349,7 +363,7 @@ const RPSGame = {
         this.matchWinner = null;
       }
 
-      console.clear();
+      // console.clear();
 
     }
     this.displayGoodbyeMessage();
