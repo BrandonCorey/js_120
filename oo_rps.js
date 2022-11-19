@@ -62,31 +62,29 @@ function createComputer() {
     winnerHistory: [],
     winningMoveHistory: [],
     weightedMove: null,
-    weights: { 
-      rock: WEIGHT, 
-      paper: WEIGHT, 
-      scissors: WEIGHT, 
-      lizard: WEIGHT, 
-      spock: WEIGHT 
+    weights: {
+      rock: WEIGHT,
+      paper: WEIGHT,
+      scissors: WEIGHT,
+      lizard: WEIGHT,
+      spock: WEIGHT
     }, // Default / minimum weights
 
 
     // Creates array of winning moves each round
     populateWinningMoves() {
-      let lastIdx = this.winnerHistory.length -1;
+
+      let lastIdx = this.winnerHistory.length - 1;
+
       if (this.winnerHistory[lastIdx] === CPU_NAME) {
         let winningMove = this.moveHistory[lastIdx];
         this.winningMoveHistory.push(winningMove);
       }
-
     },
 
     // Keeps track of computers most successful choices,
     // and weights those more heavily in future
     getWeightedMove() {
-      console.log(this.weights);
-      console.log(this.winnerHistory);
-      console.log(this.winningMoveHistory);
 
       let sum = 0;
       let random = Math.random();
@@ -121,7 +119,7 @@ function createComputer() {
       if (this.winningMoveHistory.length < 1) choice = this.choices[randomIdx];
       else {
         let choiceName = this.weightedMove;
-        console.log(choiceName)
+        console.log(choiceName);
         choice = this.choices.find(choiceObj => choiceObj.name === choiceName);
 
       }
@@ -191,7 +189,7 @@ const RPSGame = {
 
   // Displays welcome
   displayWelcomeMessage() {
-    // console.clear();
+    console.clear();
     console.log(
       '-- Welcome to Rocks, Paper, Scissors, Lizard, Spock! --\n'
     );
@@ -215,7 +213,7 @@ const RPSGame = {
       play = readline.question();
       if (play === 'rps') break;
     }
-    // console.clear();
+    console.clear();
   },
 
   // Displays goodbye message
@@ -244,7 +242,7 @@ const RPSGame = {
 
   // Displays the score of the game
   displayScore() {
-    // console.clear();
+    console.clear();
     console.log(
       `You:       Round Wins: ${this.human.roundWins} || Match Wins: ${this.human.matchWins}`);
     console.log(
@@ -354,7 +352,7 @@ const RPSGame = {
         this.matchWinner = null;
       }
 
-      // console.clear();
+      console.clear();
 
     }
     this.displayGoodbyeMessage();
