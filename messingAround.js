@@ -19,4 +19,4 @@ function add(num) {
 obj1.addArr.call(obj2);
 console.log(obj2.sum); // 3147
 add.call(obj2, 5);
-console.log(obj2.sum)
+console.log(obj2.sum) // 3152
