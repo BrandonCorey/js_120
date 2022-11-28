@@ -14,13 +14,26 @@ function createInvoice(services = {}) {
   return {
     phone: services.phone || 3000,
     internet: services.internet || 6500,
-    payment: [],
+    payments: [],
 
     total() {
       return this.phone + this.internet;
     },
-    addPayments(...payment) {
-      this.payments = payment;
+
+    addPayment(payment) {
+      this.payments.push(payment);
+    },
+
+    addPayments(payment) {
+      this.payments.push(...payment);
+    },
+
+    paymentTotal() {
+      return payments.reduce((sum, payment)  => sum + payment.total(), 0);
+    },
+
+    amountDue() {
+      return this.total() - paymentTotal(this.payments);
     }
   }
 }
@@ -82,3 +95,20 @@ payments.push(createPayment({
 }));
 
 console.log(paymentTotal(payments));      // => 24000
+
+let invoice = createInvoice({
+  phone: 1200,
+  internet: 4000,
+});
+
+let payment1 = createPayment({ amount: 2000 });
+let payment2 = createPayment({
+  phone: 1000,
+  internet: 1200
+});
+
+let payment3 = createPayment({ phone: 1000 });
+
+console.log(invoice.addPayment(payment1));
+console.log(invoice.addPayments([payment2, payment3]));
+console.log(invoice.amountDue());       // this should return 0
