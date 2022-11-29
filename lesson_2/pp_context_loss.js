@@ -92,3 +92,53 @@ TESgames = {
 };
 
 TESgames.listGames();
+
+// Use an arrow function to achieve the same result:
+TESgames = {
+  titles: ['Arena', 'Daggerfall', 'Morrowind', 'Oblivion', 'Skyrim'],
+  seriesTitle: 'The Elder Scrolls',
+  listGames: function() {
+    this.titles.forEach((title) => {
+      console.log(this.seriesTitle + ': ' + title);
+    });
+  }
+};
+
+TESgames.listGames();
+
+// Consider the following code:
+
+let foo = {
+  a: 0,
+  incrementA: function() {
+    function increment() {
+      this.a += 1;
+    }
+
+    increment();
+  }
+};
+
+foo.incrementA(); // 0
+foo.incrementA(); // 0
+foo.incrementA(); // 0
+
+// incrementA is being called as a standalone method, which means this points to global object
+
+// Use one of the methods we learned in this lesson to invoke increment
+// vwith an explicit context such that foo.a 
+// gets incremented with each invocation of incrementA.
+
+foo = {
+  a: 0,
+  incrementA: function() {
+    return function() {
+      this.a += 1;
+    }.bind(this)();
+  }
+};
+
+foo.incrementA(); // 1
+foo.incrementA(); // 2
+foo.incrementA(); // 3
+console.log(foo.a)
