@@ -1,6 +1,12 @@
+const readline = require('readline-sync');
+
 class Square {
-  constructor(marker = " ") {
-    this.marker = marker;
+  constructor() {
+    this.marker = " ";
+  }
+
+  isUnused() {
+    return this.marker === Square.UNUSED_SQUARE;
   }
 
   static UNUSED_SQUARE = ' ';
@@ -9,6 +15,10 @@ class Square {
 
   toString() {
     return this.marker // JS calls Object.prototype.toString implicitly when trying to log an object (object Object). We override that implicit call with this
+  }
+
+  setMarker(marker) {
+    this.marker = marker;
   }
 }
 
@@ -19,6 +29,15 @@ class Board {
     for (let cnt = 1; cnt < 10; cnt++) {
       this.squares[cnt] = new Square();
     }
+  }
+
+  markSquareAt(square, marker) {
+    this.squares[square].setMarker(marker);
+  }
+
+  unUsedSquares() {
+    let keys = Object.keys(this.squares);
+    return keys.filter(key => this.squares[key].isUnused());
   }
 
   display() {
@@ -45,48 +64,33 @@ class Row {
   }
 }
 
-class Marker {
-  constructor() {
-    //STUB
-    // A marker represents the players choice on the board
-  }
-}
-
 class Player {
-  constructor() {
-    //STUB
-    // maybe have a marker to keep track of player's symbol
+  constructor(marker) {
+    this.marker = marker;
   }
 
-  mark() {
-    //STUB
-    // need a way to mark the board with the players marker
-    // how do we access the board
-  }
-
-  play() {
-    //STUB
-    // We need a way for each player to play the game
-    // Do we need access to the board?
+  getMarker() {
+    return this.marker;
   }
 }
 
 class Human extends Player {
   constructor() {
-    //STUB
+    super(Square.HUMAN_MARKER);
   }
 }
 
 class Computer extends Player {
   constructor() {
-    //STUB
+    super(Square.COMPUTER_MARKER);
   }
 }
 
 class TTTGame {
   constructor() {
     this.board = new Board();
-    // Need a board and two players
+    this.human = new Human();
+    this.computer = new Computer();
   }
 
   play() {
@@ -96,17 +100,43 @@ class TTTGame {
     while (true) {
       this.board.display();
 
-      this.firstPlayerMoves();
+      this.humanMoves();
       if (this.gameOver()) break;
 
-      this.secondPlayerMoves();
+      this.computerMoves();
+  
       if (this.gameOver()) break;
 
-      break; // <= Execute loop only once for now
     }
 
     this.displayResults();
     this.displayGoodbyeMessage();
+  }
+
+  humanMoves() {
+    let choice;
+
+    while (true) {
+    let validChoices = this.board.unUsedSquares();
+    const prompt = `Choose a square (${validChoices.join(', ')}): `;
+    choice = readline.question(prompt);
+
+    if (validChoices.includes(choice)) break;
+
+    console.log("Sorry that's not a valid choice");
+    }
+
+    this.board.markSquareAt(choice, this.human.getMarker());
+  }
+
+  computerMoves() {
+    let validChoices = this.board.unUsedSquares();
+    let choice;
+    do {
+      choice = Math.floor((Math.random() * 9) + 1).toString();
+    } while (!validChoices.includes(choice));
+
+    this.board.markSquareAt(choice, this.computer.getMarker())
   }
 
   displayWelcomeMessage() {
@@ -120,16 +150,6 @@ class TTTGame {
   displayResults() {
     //STUB
     // show the results of the game (win, lose, tie)
-  }
-
-  firstPlayerMoves() {
-    //STUB
-    // the first player makes a move
-  }
-
-  secondPlayerMoves() {
-    //STUB
-    // the second player makes a move
   }
 
   gameOver() {
