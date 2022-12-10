@@ -4,6 +4,10 @@ function Square() {
   this.marker = " ";
 }
 
+Square.UNUSED_SQUARE = ' ';
+Square.HUMAN_MARKER = 'X';
+Square.COMPUTER_MARKER = 'O';
+
 Square.prototype.isUnused = function() {
   return this.marker === Square.UNUSED_SQUARE;
 }
@@ -19,10 +23,6 @@ Square.prototype.setMarker = function (marker){
 Square.prototype.getMarker = function() {
   return this.marker;
 }
-
-Square.UNUSED_SQUARE = ' ';
-Square.HUMAN_MARKER = 'X';
-Square.COMPUTER_MARKER = 'O';
 
 function Board() {
   this.squares = {};
