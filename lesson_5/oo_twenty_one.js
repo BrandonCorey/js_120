@@ -1,3 +1,5 @@
+const readline = require('readline-sync');
+
 class Card {
   constructor(suit, value, weight) {
     this.suit = suit;
@@ -33,9 +35,8 @@ class Deck {
 
   }
 
-  deal(){
-    //STUB
-    // does the dealer or deck deal
+  deal() {
+    return this.cards.pop();
   }
 
   getCards() {
@@ -60,28 +61,37 @@ class Participant {
     this.hand = [];
   }
 
-  static showHand(hand) {
+  showHand(hand) {
     let string = "";
     hand.forEach(card => {
       string += card.value + ' of ' + card.suit + ', ';
     });
-    return string.slice(0, string.length - 2);
+    return string.slice(0, string.length - 2) + ` (Score: ${this.score()})`;
   }
 
-  hit() {
-    //STUB
+  hit(dealMethod) {
+    this.hand.push(dealMethod);
   }
 
   stay() {
-    //STUB
+    return true;
   }
 
   isBusted() {
-    //STUB
+    return this.score() > TwentyOneGame.MAX_SCORE;
   }
 
   score() {
-    //STUB
+    return this.hand.reduce((sum, card) => {
+      if (
+        card.value === 'A' && 
+        card.weight + sum > TwentyOneGame.MAX_SCORE
+        ) {
+        card.weight = 1;
+      }
+
+      return sum + card.weight;
+    }, 0);
   }
 
   getHand() {
@@ -107,12 +117,10 @@ class Dealer extends Participant {
     // score, hand, amount of money?
   }
 
+  static TARGET_SCORE = 17;
+
   hide() {
     return this.hand.slice(0, 1);
-  }
-
-  reveal() {
-    return this.hand
   }
 }
 
@@ -122,6 +130,8 @@ class TwentyOneGame {
     this.dealer = new Dealer();
     this.deck = new Deck();
   }
+
+  static MAX_SCORE = 21;
 
   startRound() {
     this.dealCards();
@@ -142,40 +152,81 @@ class TwentyOneGame {
   }
 
   displayWelcomeMessage() {
+    console.clear();
     this.prompt('Welcome to the game Twenty-One!');
-    console.log('');
   }
 
   dealCards() {
     const playerHand = this.player.getHand();
     const dealerHand = this.dealer.getHand();
-    const cards = this.deck.getCards();
 
     for (let cnt = 0; cnt < 4; cnt++) {
-      if (cnt % 2 === 0) playerHand.push(cards.pop());
-      else dealerHand.push(cards.pop());
+      if (cnt % 2 === 0) playerHand.push(this.deck.deal());
+      else dealerHand.push(this.deck.deal());
     }
   }
 
-  showCards() {
+  showCards(reveal = false) {
     const playerHand = this.player.getHand();
-    const dealerHand = this.dealer.hide();
+    let dealerHand = this.dealer.hide();
 
-    this.prompt(`Your cards: ${Participant.showHand(playerHand)}`);
-    this.prompt(`Dealer's cards: ${Participant.showHand(dealerHand)}`);
+    if (reveal === true) dealerHand = this.dealer.getHand();
+
     console.log('');
+    this.prompt(`Your cards: ${this.player.showHand(playerHand)}`);
+    this.prompt(`Dealer's cards: ${this.dealer.showHand(dealerHand)}`);
+    console.log('');
+
+  }
+
+  showFinalCards() {
+    console.clear();
+    this.showCards(true);
   }
 
   playerTurn() {
-    //STUB
+    let choice;
+
+    while (!this.player.isBusted()) {
+      choice = readline.question('Do you want to (h)it, or (s)tay? ');
+      if (['h', 'hit'].includes(choice)) this.player.hit(this.deck.deal());
+      if(['s', 'stay'].includes(choice)) break;
+
+      console.clear();
+      this.showCards();
+    }
   }
 
   dealerTurn() {
-    //STUB
+    while (this.dealer.score() < Dealer.TARGET_SCORE) {
+      this.dealer.hit(this.deck.deal());
+    }
+  }
+
+  winner() {
+    if (this.player.isBusted()) return this.dealer;
+    if (this.dealer.isBusted()) return this.player;
+
+    if (this.player.score() > this.dealer.score()) return this.player;
+    if (this.player.score() < this.dealer.score()) return this.dealer;
+
+    return null;
   }
 
   displayResult() {
-    //STUB
+    this.showFinalCards();
+    console.log('\n');
+
+    let playerScore = this.player.score();
+    let dealerScore = this.dealer.score();
+
+    console.log('');
+    this.prompt(`Your score is ${playerScore}`);
+    this.prompt(`The Dealer's Score is ${dealerScore}\n`);
+
+    if (this.winner() === this.player) this.prompt('You won!!!');
+    if (this.winner() === this.dealer) this.prompt('The Dealer won. You lose...');
+    if (this.winner() === null) this.prompt(`Wow, it's a tie!`);
   }
 
   displayGoodbyeMessage() {
@@ -188,5 +239,4 @@ class TwentyOneGame {
 }
 
 let game = new TwentyOneGame();
-
 game.start();
