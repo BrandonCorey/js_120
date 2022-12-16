@@ -1,0 +1,31 @@
+// Add swim mixin to Fish and maltese with as little code as possible.
+
+const swimMixin = {
+  swim() {
+    return `${this.name} is swimming.`;
+  }
+}
+
+class Fish {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+Object.assign(Fish.prototype, swimMixin);
+
+class Dog {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+class Maltese extends Dog {}
+
+Object.assign(Maltese.prototype, swimMixin);
+
+let dog1 = new Maltese("Buddy");
+let fish1 = new Fish("Nemo");
+
+console.log(dog1.swim());
+console.log(fish1.swim());
