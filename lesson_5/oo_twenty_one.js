@@ -137,8 +137,6 @@ class Participant {
         card.weight = 1;
       }
 
-
-
       return !card.isHidden() ? sum + card.weight : sum + 0;
     }, 0);
   }
