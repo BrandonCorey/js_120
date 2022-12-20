@@ -10,18 +10,18 @@ class Card {
 
   static suits = ["Spades", "Hearts", "Diamonds", "Clubs"];
   static values = [
-    "2", 
-    "3", 
-    "4", 
-    "5", 
-    "6", 
-    "7", 
-    "8", 
-    "9", 
-    "10", 
-    "J", 
-    "Q", 
-    "K", 
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K",
     "A"
   ];
 
@@ -63,18 +63,19 @@ class Deck {
     Card.suits.forEach(suit => {
       Card.values.forEach(value => {
         let weight;
-  
+
         if (/[JQK]/g.test(value)) weight = 10;
         else if (value === 'A') weight = 11;
         else weight = Number(value);
-  
+
         let card = new Card(suit, value, weight);
-  
+
         this.cards.push(card);
       });
     });
-
   }
+
+  static MIN_CARDS = 13
 
   deal() {
     return this.cards.pop();
@@ -93,9 +94,13 @@ class Deck {
   shuffle() {
     for (let idx = this.cards.length - 1; idx > 0; idx--) {
       let randIdx = Math.floor(Math.random() * (idx + 1));
-      [this.cards[idx], this.cards[randIdx]] = 
+      [this.cards[idx], this.cards[randIdx]] =
       [this.cards[randIdx], this.cards[idx]];
     }
+  }
+
+  getCardsLeft() {
+    return this.cards.length;
   }
 }
 
@@ -129,16 +134,18 @@ class Participant {
   }
 
   score() {
-    return this.hand.reduce((sum, card) => {
-      if (
-        card.value === 'A' && 
-        card.weight + sum > TwentyOneGame.MAX_SCORE
-        ) {
-        card.weight = 1;
-      }
-
-      return !card.isHidden() ? sum + card.weight : sum + 0;
+    let cards = this.hand;
+    let score = cards.reduce((sum, card) => {
+      return !card.isHidden() ? sum + card.getWeight() : sum + 0;
     }, 0);
+
+    cards.filter(card => card.getValue() === 'A' && !card.isHidden())
+          .forEach(() => {
+            if (score > TwentyOneGame.MAX_SCORE) {
+              score -= 10;
+            }
+          });
+    return score;
   }
 
   getHand() {
@@ -171,6 +178,7 @@ class TwentyOneGame {
   static MAX_SCORE = 21;
 
   startRound() {
+    this.replaceLowDeck();
     this.resetRound();
     this.dealCards();
     this.showCards();
@@ -200,8 +208,8 @@ class TwentyOneGame {
     console.log('2. The aim is to get a higher score than the dealer whie not going over 21 (busting).\n');
     console.log(
       '3. Note: Face cards (J --> K) worth 10 points. Ace worth 11 or 1.\n'
-      );
-    console.log('-- End --\n\n')
+    );
+    console.log('-- End --\n\n');
 
     this.prompt('Press any key to begin');
     readline.question();
@@ -214,7 +222,7 @@ class TwentyOneGame {
 
     for (let cnt = 0; cnt < 4; cnt++) {
       if (cnt % 2 === 0) playerHand.push(this.deck.deal());
-      else if (cnt === 3) dealerHand.push(this.deck.dealFaceDown())
+      else if (cnt === 3) dealerHand.push(this.deck.dealFaceDown());
       else dealerHand.push(this.deck.deal());
     }
   }
@@ -242,7 +250,7 @@ class TwentyOneGame {
     while (!this.player.isBusted()) {
       choice = readline.question('Do you want to (h)it, or (s)tay? ');
       if (['h', 'hit'].includes(choice)) this.player.hit(this.deck.deal());
-      if(['s', 'stay'].includes(choice)) break;
+      if (['s', 'stay'].includes(choice)) break;
 
       console.clear();
       this.showCards();
@@ -255,9 +263,9 @@ class TwentyOneGame {
 
   dealerTurn() {
     while (
-      this.dealer.score() < Dealer.TARGET_SCORE && 
+      this.dealer.score() < Dealer.TARGET_SCORE &&
       (!this.player.isBusted())
-      ) {
+    ) {
       this.dealerContinue();
       this.dealer.hit(this.deck.deal());
 
@@ -293,6 +301,14 @@ class TwentyOneGame {
     this.dealer.hand = [];
   }
 
+  replaceLowDeck() {
+    let cardsLeft = this.deck.getCardsLeft();
+
+    if (cardsLeft < Deck.MIN_CARDS) {
+      this.deck = new Deck();
+    }
+  }
+
   displayResult() {
     this.showFinalCards();
     console.log('\n');
@@ -305,7 +321,7 @@ class TwentyOneGame {
     this.prompt(`The Dealer's Score is ${dealerScore}\n`);
 
     if (this.player.isBusted()) this.prompt('Whoops! You busted!\n');
-    if (this.dealer.isBusted()) this.prompt('The dealer busted!!')
+    if (this.dealer.isBusted()) this.prompt('The dealer busted!!');
 
     if (this.winner() === this.player) this.prompt('You won!!!\n');
     if (this.winner() === this.dealer) this.prompt('The Dealer won. You lose...');
