@@ -140,11 +140,11 @@ class Participant {
     }, 0);
 
     cards.filter(card => card.getValue() === 'A' && !card.isHidden())
-          .forEach(() => {
-            if (score > TwentyOneGame.MAX_SCORE) {
-              score -= 10;
-            }
-          });
+      .forEach(() => {
+        if (score > TwentyOneGame.MAX_SCORE) {
+          score -= 10;
+        }
+      });
     return score;
   }
 
@@ -249,8 +249,8 @@ class TwentyOneGame {
 
     while (!this.player.isBusted()) {
       choice = readline.question('Do you want to (h)it, or (s)tay? ');
-      if (['h', 'hit'].includes(choice)) this.player.hit(this.deck.deal());
-      if (['s', 'stay'].includes(choice)) break;
+      if (['h', 'H', 'hit'].includes(choice)) this.player.hit(this.deck.deal());
+      if (['s', 'S', 'stay'].includes(choice)) break;
 
       console.clear();
       this.showCards();
